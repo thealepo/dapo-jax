@@ -11,6 +11,28 @@ MAX_NEW_TOKENS = 8  # placeholder
 MU = 4
 G = 8
 
+def generate_groups(policy , input_ids , prompt_len , rng):
+    def gen_one(rng , _):
+        rng , rng_gen = jax.random.split(rng)
+        output = policy.generate(input_ids , rng=rng_gen , max_new_tokens=MAX_NEW_TOKENS)
+        return rng , outputs
+
+    _ , outputs = jax.lax.scan(gen_one , rng , None , length=G)
+    outputs = rearrange(outputs , 'g b t -> b g t')
+    responses = outputs[: , : , prompt_len:]
+    return outputs , responses
+
+def compute_advantages(rewards):
+    mean = rewards.mean(axis=1 , keepdims=True)
+    std = rewards.std(axis=1 , keepdims=True)
+    return (rewards - mean) / std
+
+def compute_log_probs(policy , outputs , prompt_len):
+    flattened = rearrange(outputs , 'b g t -> (b g) t')
+    log_probs = policy.log_probs_of(flattened)
+    log_probs = rearrange(log_probs , '(b g) t -> b g t' , g=G)
+    return log_probs[: , : , prompt_len:]
+
 def dapo_loss(log_probs_rl , old_log_probs , advantages , epsilon_low=0.2 , epsilon_high=0.28):
     ratio = jnp.exp(log_probs_rl - old_log_probs)  # [batch , G , response_len]
     At = rearrange(advantages , 'b g -> b g 1')
@@ -46,6 +68,13 @@ def train_batch(policy , reward , optimizer , input_ids , prompt_len , rng):
 
     rewards = rearrange(flat_rewards , '(b g) t -> b g t' , g=G)
 
+
+    losses = []
+    for _ in range(MU):
+        loss = train_step(policy , optimizer , full_generations , old_log_probs , advantages , prompt_len)
+        losses.append(loss)
+
+    return losses
 
 
 
