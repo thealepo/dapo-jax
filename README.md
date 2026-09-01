@@ -8,18 +8,18 @@ Decoupled Clip and Dynamic Sampling Policy Optimization (DAPO) is a post-trainin
 $$
 \mathcal{J}_{\mathrm{DAPO}}(\theta)
 =
-\mathbb{E}\!\left[
+\mathbb{E}\left[
 \frac{1}{\sum_{i=1}^{G}|o_i|}
 \sum_{i=1}^{G}\sum_{t=1}^{|o_i|}
-\min\!\left(
-r_{i,t}(\theta)\hat A_i,\;
-\operatorname{clip}\!\left(
+\min\left(
+r_{i,t}(\theta)\hat{A}_i,\;
+\operatorname{clip}\left(
 r_{i,t}(\theta),
 1-\epsilon_{\mathrm{low}},
 1+\epsilon_{\mathrm{high}}
-\right)\hat A_i
+\right)\hat{A}_i
 \right)
-\right],
+\right]
 $$
 
 where
@@ -33,18 +33,20 @@ r_{i,t}(\theta)
 \pi_{\theta_{\mathrm{old}}}(o_{i,t}\mid q,o_{i,<t})
 },
 \qquad
-\hat A_i
+\hat{A}_i
 =
 \frac{R_i-\operatorname{mean}(R)}
-{\operatorname{std}(R)}.
+{\operatorname{std}(R)}
 $$
 
-Dynamic sampling keeps only groups satisfying
+and dynamic sampling retains only groups satisfying
 
 $$
 0 <
-\left|\left\{
-o_i:\operatorname{is\_equivalent}(a,o_i)
-\right\}\right|
+\left|
+\left\{
+o_i : \operatorname{is\_equivalent}(a,o_i)
+\right\}
+\right|
 < G.
 $$
