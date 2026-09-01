@@ -5,48 +5,18 @@ Flax NNX implementation of Decoupled Clip and Dynamic Sampling Policy Optimizati
 
 Decoupled Clip and Dynamic Sampling Policy Optimization (DAPO) is a post-training reinforcement learning algorithm designed to target several limitations of GRPO. The objective of DAPO is defined as:
 
-$$
-\mathcal{J}_{\mathrm{DAPO}}(\theta)
-=
-\mathbb{E}\left[
-\frac{1}{\sum_{i=1}^{G}|o_i|}
-\sum_{i=1}^{G}\sum_{t=1}^{|o_i|}
-\min\left(
-r_{i,t}(\theta)\hat{A}_i,\;
-\operatorname{clip}\left(
-r_{i,t}(\theta),
-1-\epsilon_{\mathrm{low}},
-1+\epsilon_{\mathrm{high}}
-\right)\hat{A}_i
-\right)
-\right]
-$$
+<PUT IN LATER>
 
-where
+## The Changes
 
-$$
-r_{i,t}(\theta)
-=
-\frac{
-\pi_\theta(o_{i,t}\mid q,o_{i,<t})
-}{
-\pi_{\theta_{\mathrm{old}}}(o_{i,t}\mid q,o_{i,<t})
-},
-\qquad
-\hat{A}_i
-=
-\frac{R_i-\operatorname{mean}(R)}
-{\operatorname{std}(R)}
-$$
+The core changes that differentiate DAPO from GRPO are outlined in the following.
 
-and dynamic sampling retains only groups satisfying
+### Epsilon Clipping Bound
 
-$$
-0 <
-\left|
-\left\{
-o_i : \operatorname{is\_equivalent}(a,o_i)
-\right\}
-\right|
-< G.
-$$
+DAPO introduces a higher upper epsilon bound. 
+
+### Dynamic Sampling
+
+Perhaps the biggest code-related change (and to me, the most fun!) is the inclusion of Dynamic Sampling. This change targets the quality of the samples from our rollouts. Consider an RLVR example, in which a response containing the correct answer is scored with a 1, and a 0 otherwise. If in the G groups, a
+
+<CONTINUE WITH THE EXPLANATIONS>
