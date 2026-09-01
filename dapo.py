@@ -30,3 +30,32 @@ def train_step(policy , optimizer , outputs , old_log_probs , log_probs_sft , ad
     loss_val , grads = nnx.value_and_grad(loss_fn)(policy)
     optimizer.update(policy , grads)
     return loss_val
+
+
+# generate groups -> collect rewards -> dynamic sample check (DAPO) -> calculate advantages -> loss
+def train_batch(policy , reward , optimizer , input_ids , prompt_len , rng):
+    rng , rng_gen = jax.random.split(rng)
+
+    full_generations , responses = generate_groups(policy , input_ids , prompt_len , rng_gen)  # [batch , G , total_len] | [batch , G , response_len]
+
+    old_log_probs = compute_log_probs(policy , full_generations , prompt_len)
+    
+    flat_responses = rearrange(responses , 'b g t -> (b g) t')
+    flat_mask = jnp.ones_like(flat_responses)  # change the masking logic
+    flat_rewards = reward(flat_responses , flat_mask)
+
+    rewards = rearrange(flat_rewards , '(b g) t -> b g t' , g=G)
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
