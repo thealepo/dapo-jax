@@ -66,8 +66,17 @@ def train_batch(policy , reward , optimizer , input_ids , prompt_len , rng):
     flat_mask = jnp.ones_like(flat_responses)  # change the masking logic
     flat_rewards = reward(flat_responses , flat_mask)
 
-    rewards = rearrange(flat_rewards , '(b g) t -> b g t' , g=G)
+    rewards = rearrange(flat_rewards , '(b g) -> b g' , g=G)
 
+    # NOTE: Dynamic Sampling
+    reward_sum = rewards.sum(axis=1)
+    keep = (reward_sum > 0) & (reward_sum < G)  # [batch]
+
+    full_generations = full_generations[keep]
+    old_log_probs = old_log_probs[keep]
+    rewards = rewards[keep]
+
+    advantages = compute_advantages(rewards)
 
     losses = []
     for _ in range(MU):
